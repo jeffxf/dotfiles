@@ -1,0 +1,52 @@
+[alias]
+	# tree prints a pretty graph of history
+	tree = log --graph --oneline --all
+	# getbranches will pull down every remote branch
+	getbranches = "!f(){ for remote in `git branch -r | grep -v'>'` ; do git branch --track ${remote#origin} $remote; done };f"
+	# update will pull updates for every branch & submodule, and will untrack any remote branches that no longer exist
+	update = !git pull --all --tags --rebase --prune $@ && git submodule update --init --recursive
+	# m 'merges' in changes from origin/master
+	m = rebase origin/master
+	# purgeold deletes old branches that are already merged into master (must be ran from master branch through)
+	purgeold = "!f(){ if [[ $(git rev-parse --abbrev-ref HEAD) == 'master' ]]; then echo $(git branch --merged | egrep -v '(^\\*|master|dev)' xargs git branch -d || echo '(No old branches to purge)'); else echo 'You can only run this within the local master branch...'; fi };f"
+	co = checkout
+	b = branch
+	# new will create a new branch
+	new = checkout -b
+	# rename a local branch (git rename old-nam new-name)
+	rename = branch -m
+	d = branch -d
+	# delete remote branch (WARNING! Be careful of course...)
+	dremote = push --delete origin
+	ap = add --patch
+	diffs = diff --staged
+	c = commit -v
+	# p will push current local branch to a remote branch with the same name and create the remote branch if it doesnt exist
+	p = !git push -u origin `git rev-parse --abbrev-ref HEAD`
+	unstage = reset
+	uncommit = reset --soft HEAD^
+	undochanges = reset --hard HEAD
+	# sync gets remote changes then will only push local changes if the remote branch still exists
+	sync = !git pull --tags --prune && git push -u
+	s = status
+	# start a web server to view a local repo
+	start = instaweb --httpd=webrick -l
+	stop = instaweb --httpd=webrick -l --stop
+	last = log -n 1
+
+[init]
+	defaultBranch = main
+
+[user]
+	name = jeffxf
+	email = jeffxf@users.noreply.github.com
+
+[url "git@github.com:"]
+	insteadOf = "https://github.com/"
+
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+
